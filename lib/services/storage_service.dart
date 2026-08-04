@@ -32,4 +32,24 @@ class StorageService {
     }
     return null;
   }
+
+  // Clear messages for a specific channel
+  static Future<void> clearChannelMessages(String channelId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_messagesKeyPrefix + channelId);
+    } catch (e) {
+      // Fallback
+    }
+  }
+
+  // Clear all persistent storage (reset app data)
+  static Future<void> clearAllStorage() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
+    } catch (e) {
+      // Fallback
+    }
+  }
 }

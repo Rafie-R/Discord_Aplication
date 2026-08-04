@@ -9,6 +9,9 @@ class ChatViewPanel extends StatefulWidget {
   final List<DiscordMessage> messages;
   final VoidCallback? onBackPressed;
   final ValueChanged<String> onSendMessage;
+  final ValueChanged<DiscordMessage>? onDeleteMessage;
+  final VoidCallback? onClearChannelHistory;
+  final VoidCallback? onResetAllStorage;
 
   const ChatViewPanel({
     super.key,
@@ -17,6 +20,9 @@ class ChatViewPanel extends StatefulWidget {
     required this.messages,
     this.onBackPressed,
     required this.onSendMessage,
+    this.onDeleteMessage,
+    this.onClearChannelHistory,
+    this.onResetAllStorage,
   });
 
   @override
@@ -105,6 +111,39 @@ class _ChatViewPanelState extends State<ChatViewPanel> {
                   IconButton(
                     icon: const Icon(Icons.search, color: Color(0xFF4F545C)),
                     onPressed: () {},
+                  ),
+                  // Header Popup Menu (Options: Clear Chat / Reset Storage)
+                  PopupMenuButton<String>(
+                    icon: const Icon(Icons.more_vert, color: Color(0xFF4F545C)),
+                    onSelected: (value) {
+                      if (value == 'clear_channel' && widget.onClearChannelHistory != null) {
+                        widget.onClearChannelHistory!();
+                      } else if (value == 'reset_storage' && widget.onResetAllStorage != null) {
+                        widget.onResetAllStorage!();
+                      }
+                    },
+                    itemBuilder: (context) => [
+                      const PopupMenuItem(
+                        value: 'clear_channel',
+                        child: Row(
+                          children: [
+                            Icon(Icons.cleaning_services, size: 18, color: Colors.orange),
+                            SizedBox(width: 8),
+                            Text('Clear Channel History'),
+                          ],
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: 'reset_storage',
+                        child: Row(
+                          children: [
+                            Icon(Icons.delete_forever, size: 18, color: Colors.red),
+                            SizedBox(width: 8),
+                            Text('Reset All App Storage'),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -402,49 +441,31 @@ class _ChatViewPanelState extends State<ChatViewPanel> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: msg.author.roleColor,
-                  shape: BoxShape.circle,
-                ),
+              // Avatar
+              CircleAvatar(
+                radius: 18,
+                backgroundColor: msg.author.roleColor,
                 child: ClipOval(
-                  child: msg.author.avatarUrl.isNotEmpty
-                      ? Image.network(
-                          msg.author.avatarUrl,
-                          width: 36,
-                          height: 36,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => Center(
-                            child: msg.author.id == 'user_duck'
-                                ? const Text('🦆', style: TextStyle(fontSize: 20))
-                                : Text(
-                                    msg.author.name.isNotEmpty
-                                        ? msg.author.name[0].toUpperCase()
-                                        : 'U',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                          ),
-                        )
-                      : Center(
-                          child: msg.author.id == 'user_duck'
-                              ? const Text('🦆', style: TextStyle(fontSize: 20))
-                              : Text(
-                                  msg.author.name.isNotEmpty
-                                      ? msg.author.name[0].toUpperCase()
-                                      : 'U',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                        ),
+                  child: Image.network(
+                    msg.author.avatarUrl,
+                    width: 36,
+                    height: 36,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Center(
+                      child: msg.author.id == 'user_duck'
+                          ? const Text('🦆', style: TextStyle(fontSize: 20))
+                          : Text(
+                              msg.author.name.isNotEmpty
+                                  ? msg.author.name[0].toUpperCase()
+                                  : 'U',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
@@ -457,41 +478,60 @@ class _ChatViewPanelState extends State<ChatViewPanel> {
                     // Author Header Row
                     Row(
                       children: [
-                        Text(
-                          msg.author.name,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                            color: Color(0xFF2E3338),
-                          ),
-                        ),
-                        if (msg.author.roleBadge.isNotEmpty) ...[
-                          const SizedBox(width: 6),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 4, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: msg.author.roleColor.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              msg.author.roleBadge,
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                                color: msg.author.roleColor,
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  msg.author.name,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                    color: Color(0xFF2E3338),
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
-                            ),
-                          ),
-                        ],
-                        const SizedBox(width: 8),
-                        Text(
-                          msg.timestamp,
-                          style: const TextStyle(
-                            fontSize: 11,
-                            color: Color(0xFF747F8D),
+                              if (msg.author.roleBadge.isNotEmpty) ...[
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 4, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: msg.author.roleColor.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    msg.author.roleBadge,
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      color: msg.author.roleColor,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                              const SizedBox(width: 8),
+                              Text(
+                                msg.timestamp,
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: Color(0xFF747F8D),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
+                        // Delete Button Icon for individual message
+                        if (widget.onDeleteMessage != null)
+                          IconButton(
+                            icon: const Icon(Icons.delete_outline,
+                                size: 16, color: Color(0xFF949BA4)),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            tooltip: 'Delete message',
+                            onPressed: () => _confirmDeleteMessage(context, msg),
+                          ),
                       ],
                     ),
                     const SizedBox(height: 4),
@@ -518,10 +558,38 @@ class _ChatViewPanelState extends State<ChatViewPanel> {
     );
   }
 
+  void _confirmDeleteMessage(BuildContext context, DiscordMessage msg) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Message', style: TextStyle(fontSize: 16)),
+        content: const Text('Are you sure you want to delete this message?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFF23F43),
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () {
+              Navigator.pop(ctx);
+              if (widget.onDeleteMessage != null) {
+                widget.onDeleteMessage!(msg);
+              }
+            },
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildFormattedText(String text, bool isMention) {
     final spans = <InlineSpan>[];
 
-    // Simple parser for @mentions and *italics*
     final words = text.split(' ');
     for (int i = 0; i < words.length; i++) {
       final word = words[i];

@@ -94,8 +94,37 @@ class _DiscordMainScreenState extends State<DiscordMainScreen> {
       messages.add(newMessage);
     });
 
-    // Save to local storage for persistent reload across F5 / refreshes!
     await StorageService.saveChannelMessages(channelId, messages);
+  }
+
+  void _handleDeleteMessage(DiscordMessage msg) async {
+    final channelId = _selectedChannel.id;
+    final messages = MockDiscordData.channelMessages[channelId];
+    if (messages != null) {
+      setState(() {
+        messages.removeWhere((m) => m.id == msg.id);
+      });
+      await StorageService.saveChannelMessages(channelId, messages);
+    }
+  }
+
+  void _handleClearChannelHistory() async {
+    final channelId = _selectedChannel.id;
+    setState(() {
+      MockDiscordData.channelMessages[channelId] = [];
+    });
+    await StorageService.clearChannelMessages(channelId);
+  }
+
+  void _handleResetAllStorage() async {
+    await StorageService.clearAllStorage();
+    if (!mounted) return;
+    setState(() {
+      MockDiscordData.channelMessages.clear();
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('All local storage cleared successfully!')),
+    );
   }
 
   @override
@@ -131,6 +160,9 @@ class _DiscordMainScreenState extends State<DiscordMainScreen> {
                     channel: _selectedChannel,
                     messages: messages,
                     onSendMessage: _handleSendMessage,
+                    onDeleteMessage: _handleDeleteMessage,
+                    onClearChannelHistory: _handleClearChannelHistory,
+                    onResetAllStorage: _handleResetAllStorage,
                   ),
                 ),
               ],
@@ -169,6 +201,9 @@ class _DiscordMainScreenState extends State<DiscordMainScreen> {
                     );
                   },
                   onSendMessage: _handleSendMessage,
+                  onDeleteMessage: _handleDeleteMessage,
+                  onClearChannelHistory: _handleClearChannelHistory,
+                  onResetAllStorage: _handleResetAllStorage,
                 ),
               ],
             );
