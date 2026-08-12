@@ -1,5 +1,5 @@
+import 'package:discord/splash_page.dart';
 import 'package:flutter/material.dart';
-import 'screens/discord_main_screen.dart';
 
 void main() {
   runApp(const DiscordApp());
@@ -23,7 +23,7 @@ class DiscordApp extends StatelessWidget {
         ),
         scaffoldBackgroundColor: const Color(0xFFF2F3F5),
       ),
-      home: const DiscordMainScreen(),
+      home: const SplashScreen(),
     );
   }
 }
