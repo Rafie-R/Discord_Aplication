@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:discord/screens/discord_main_screen.dart';
+import 'package:discord/screens/login_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -106,14 +108,19 @@ class _SplashScreenState extends State<SplashScreen>
       }
     });
 
-    // Navigate to Main Screen after full splash sequence
+    // Navigate to Login or Main Screen based on auth state
     _navigationTimer = Timer(const Duration(milliseconds: 3300), () {
       if (mounted) {
+        final currentUser = FirebaseAuth.instance.currentUser;
+        final Widget targetScreen = currentUser != null
+            ? const DiscordMainScreen()
+            : const LoginScreen();
+
         Navigator.pushReplacement(
           context,
           PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) =>
-                const DiscordMainScreen(),
+                targetScreen,
             transitionsBuilder:
                 (context, animation, secondaryAnimation, child) {
               return FadeTransition(

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../models/message_model.dart';
 import '../services/storage_service.dart';
+import 'login_screen.dart';
 
 class UserProfileScreen extends StatefulWidget {
   final DiscordUser user;
@@ -63,6 +65,15 @@ class _UserProfileScreenState extends State<UserProfileScreen>
   void initState() {
     super.initState();
     _currentUser = widget.user;
+    final fbUser = FirebaseAuth.instance.currentUser;
+    if (fbUser != null) {
+      if (fbUser.displayName != null && fbUser.displayName!.isNotEmpty) {
+        _currentUser.name = fbUser.displayName!;
+      }
+      if (fbUser.email != null && fbUser.email!.isNotEmpty) {
+        _currentUser.handle = fbUser.email!;
+      }
+    }
     _tabController = TabController(length: 2, vsync: this);
     _noteController = TextEditingController(text: _currentUser.note);
 
@@ -102,6 +113,41 @@ class _UserProfileScreenState extends State<UserProfileScreen>
     _tabController.dispose();
     _noteController.dispose();
     super.dispose();
+  }
+
+  Future<void> _logout(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF313338),
+        title: const Text('Log Out', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        content: const Text('Apakah Anda yakin ingin keluar dari akun Discord?', style: TextStyle(color: Color(0xFFDBDEE1))),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Batal', style: TextStyle(color: Colors.white70)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFDA373C),
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Log Out'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await FirebaseAuth.instance.signOut();
+      if (context.mounted) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+          (route) => false,
+        );
+      }
+    }
   }
 
   void _notifyUpdate() {
@@ -310,6 +356,38 @@ class _UserProfileScreenState extends State<UserProfileScreen>
                       ),
                     ),
                   )
+                ],
+              ),
+            ),
+          ),
+        ),
+
+        // Logout Button on Top Right
+        Positioned(
+          top: 12,
+          right: 12,
+          child: InkWell(
+            onTap: () => _logout(context),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.6),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Colors.redAccent.withValues(alpha: 0.6)),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.logout_rounded, color: Colors.redAccent, size: 16),
+                  SizedBox(width: 4),
+                  Text(
+                    'Logout',
+                    style: TextStyle(
+                      color: Colors.redAccent,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -1316,6 +1394,20 @@ class _UserProfileScreenState extends State<UserProfileScreen>
               ),
               icon: const Icon(Icons.delete_forever),
               label: const Text('Clear Storage & Reset App'),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.pop(ctx);
+                _logout(context);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFDA373C),
+                foregroundColor: Colors.white,
+                minimumSize: const Size(double.infinity, 40),
+              ),
+              icon: const Icon(Icons.logout_rounded),
+              label: const Text('Log Out Account'),
             ),
           ],
         ),
