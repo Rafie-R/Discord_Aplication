@@ -7,6 +7,7 @@ class ServerSidebar extends StatelessWidget {
   final DiscordServer selectedServer;
   final ValueChanged<DiscordServer> onServerSelected;
   final DiscordUser user;
+  final VoidCallback? onUserProfileTap;
 
   const ServerSidebar({
     super.key,
@@ -14,6 +15,7 @@ class ServerSidebar extends StatelessWidget {
     required this.selectedServer,
     required this.onServerSelected,
     required this.user,
+    this.onUserProfileTap,
   });
 
   @override
@@ -67,45 +69,49 @@ class ServerSidebar extends StatelessWidget {
           ),
 
           // Bottom User Profile Bar Icon
-          Container(
-            padding: const EdgeInsets.all(8.0),
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF5865F2),
-                    shape: BoxShape.circle,
-                  ),
-                  child: ClipOval(
-                    child: user.avatarUrl.isNotEmpty
-                        ? Image.network(
-                            user.avatarUrl,
-                            width: 40,
-                            height: 40,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                const Center(child: Text('🦆', style: TextStyle(fontSize: 22))),
-                          )
-                        : const Center(child: Text('🦆', style: TextStyle(fontSize: 22))),
-                  ),
-                ),
-                Positioned(
-                  right: -2,
-                  bottom: -2,
-                  child: Container(
-                    width: 14,
-                    height: 14,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF23A55A),
+          InkWell(
+            onTap: onUserProfileTap,
+            borderRadius: BorderRadius.circular(20),
+            child: Container(
+              padding: const EdgeInsets.all(8.0),
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF5865F2),
                       shape: BoxShape.circle,
-                      border: Border.all(color: const Color(0xFFE3E5E8), width: 2),
+                    ),
+                    child: ClipOval(
+                      child: user.avatarUrl.isNotEmpty
+                          ? Image.network(
+                              user.avatarUrl,
+                              width: 40,
+                              height: 40,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Center(child: Text('🦆', style: TextStyle(fontSize: 22))),
+                            )
+                          : const Center(child: Text('🦆', style: TextStyle(fontSize: 22))),
                     ),
                   ),
-                )
-              ],
+                  Positioned(
+                    right: -2,
+                    bottom: -2,
+                    child: Container(
+                      width: 14,
+                      height: 14,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF23A55A),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: const Color(0xFFE3E5E8), width: 2),
+                      ),
+                    ),
+                  )
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 12),

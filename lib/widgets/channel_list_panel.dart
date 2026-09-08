@@ -7,6 +7,7 @@ class ChannelListPanel extends StatefulWidget {
   final DiscordChannel selectedChannel;
   final ValueChanged<DiscordChannel> onChannelSelected;
   final DiscordUser currentUser;
+  final VoidCallback? onUserProfileTap;
 
   const ChannelListPanel({
     super.key,
@@ -14,6 +15,7 @@ class ChannelListPanel extends StatefulWidget {
     required this.selectedChannel,
     required this.onChannelSelected,
     required this.currentUser,
+    this.onUserProfileTap,
   });
 
   @override
@@ -355,98 +357,102 @@ class _ChannelListPanelState extends State<ChannelListPanel> {
           ),
 
           // Bottom Floating User Bar (Duck v, Online)
-          Container(
-            margin: const EdgeInsets.all(12),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.06),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                )
-              ],
-            ),
-            child: Row(
-              children: [
-                Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Container(
-                      width: 32,
-                      height: 32,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF5865F2),
-                        shape: BoxShape.circle,
-                      ),
-                      child: ClipOval(
-                        child: widget.currentUser.avatarUrl.isNotEmpty
-                            ? Image.network(
-                                widget.currentUser.avatarUrl,
-                                width: 32,
-                                height: 32,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) =>
-                                    const Center(child: Text('🦆', style: TextStyle(fontSize: 18))),
-                              )
-                            : const Center(child: Text('🦆', style: TextStyle(fontSize: 18))),
-                      ),
-                    ),
-                    Positioned(
-                      right: 0,
-                      bottom: 0,
-                      child: Container(
-                        width: 10,
-                        height: 10,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF23A55A),
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 2),
-                        ),
-                      ),
-                    )
-                  ],
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
+          InkWell(
+            onTap: widget.onUserProfileTap,
+            borderRadius: BorderRadius.circular(20),
+            child: Container(
+              margin: const EdgeInsets.all(12),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.06),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  )
+                ],
+              ),
+              child: Row(
+                children: [
+                  Stack(
+                    clipBehavior: Clip.none,
                     children: [
-                      Row(
-                        children: [
-                          Text(
-                            widget.currentUser.name,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                              color: Color(0xFF2E3338),
-                            ),
-                          ),
-                          const Icon(Icons.keyboard_arrow_down,
-                              size: 16, color: Color(0xFF747F8D)),
-                        ],
-                      ),
-                      const Text(
-                        'Online',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Color(0xFF747F8D),
+                      Container(
+                        width: 32,
+                        height: 32,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF5865F2),
+                          shape: BoxShape.circle,
+                        ),
+                        child: ClipOval(
+                          child: widget.currentUser.avatarUrl.isNotEmpty
+                              ? Image.network(
+                                  widget.currentUser.avatarUrl,
+                                  width: 32,
+                                  height: 32,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      const Center(child: Text('🦆', style: TextStyle(fontSize: 18))),
+                                )
+                              : const Center(child: Text('🦆', style: TextStyle(fontSize: 18))),
                         ),
                       ),
+                      Positioned(
+                        right: 0,
+                        bottom: 0,
+                        child: Container(
+                          width: 10,
+                          height: 10,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF23A55A),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 2),
+                          ),
+                        ),
+                      )
                     ],
                   ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.notifications_outlined, size: 20),
-                  color: const Color(0xFF4F545C),
-                  onPressed: () {},
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                ),
-              ],
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              widget.currentUser.name,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                                color: Color(0xFF2E3338),
+                              ),
+                            ),
+                            const Icon(Icons.keyboard_arrow_down,
+                                size: 16, color: Color(0xFF747F8D)),
+                          ],
+                        ),
+                        Text(
+                          widget.currentUser.status.toUpperCase(),
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: Color(0xFF747F8D),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.notifications_outlined, size: 20),
+                    color: const Color(0xFF4F545C),
+                    onPressed: () {},
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                ],
+              ),
             ),
           ),
         ],

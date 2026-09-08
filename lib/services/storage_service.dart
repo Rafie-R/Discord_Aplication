@@ -52,4 +52,28 @@ class StorageService {
       // Fallback
     }
   }
+
+  // Save current user profile data
+  static Future<void> saveUserProfile(DiscordUser user) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('discord_user_profile', jsonEncode(user.toJson()));
+    } catch (e) {
+      // Fallback
+    }
+  }
+
+  // Load current user profile data
+  static Future<DiscordUser?> loadUserProfile() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString('discord_user_profile');
+      if (raw != null && raw.isNotEmpty) {
+        return DiscordUser.fromJson(jsonDecode(raw));
+      }
+    } catch (e) {
+      // Fallback
+    }
+    return null;
+  }
 }

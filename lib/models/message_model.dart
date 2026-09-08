@@ -24,13 +24,56 @@ class EmojiReaction {
       );
 }
 
-class DiscordUser {
+class ShopItem {
   final String id;
-  final String name;
-  final String avatarUrl;
-  final String roleBadge;
-  final Color roleColor;
-  final String status;
+  final String title;
+  final String category;
+  final String price;
+  final String iconEmoji;
+  final Color color;
+
+  ShopItem({
+    required this.id,
+    required this.title,
+    required this.category,
+    required this.price,
+    required this.iconEmoji,
+    required this.color,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'title': title,
+        'category': category,
+        'price': price,
+        'iconEmoji': iconEmoji,
+        'color': color.toARGB32(),
+      };
+
+  factory ShopItem.fromJson(Map<String, dynamic> json) => ShopItem(
+        id: json['id'] ?? '',
+        title: json['title'] ?? '',
+        category: json['category'] ?? '',
+        price: json['price'] ?? '',
+        iconEmoji: json['iconEmoji'] ?? '✨',
+        color: Color(json['color'] ?? 0xFF5865F2),
+      );
+}
+
+class DiscordUser {
+  String id;
+  String name;
+  String avatarUrl;
+  String roleBadge;
+  Color roleColor;
+  String status;
+  String handle;
+  String customStatus;
+  String memberSince;
+  int orbsBalance;
+  String note;
+  List<ShopItem> wishlist;
+  List<DiscordUser> friends;
 
   DiscordUser({
     required this.id,
@@ -39,7 +82,15 @@ class DiscordUser {
     this.roleBadge = '',
     this.roleColor = const Color(0xFF5865F2),
     this.status = 'online',
-  });
+    this.handle = 'gamerducky_ • Prime (R)',
+    this.customStatus = 'What\'s on your mind?',
+    this.memberSince = 'Jan 25, 2022',
+    this.orbsBalance = 1250,
+    this.note = '',
+    List<ShopItem>? wishlist,
+    List<DiscordUser>? friends,
+  })  : wishlist = wishlist ?? [],
+        friends = friends ?? [];
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -48,6 +99,13 @@ class DiscordUser {
         'roleBadge': roleBadge,
         'roleColor': roleColor.toARGB32(),
         'status': status,
+        'handle': handle,
+        'customStatus': customStatus,
+        'memberSince': memberSince,
+        'orbsBalance': orbsBalance,
+        'note': note,
+        'wishlist': wishlist.map((item) => item.toJson()).toList(),
+        'friends': friends.map((f) => f.toJson()).toList(),
       };
 
   factory DiscordUser.fromJson(Map<String, dynamic> json) => DiscordUser(
@@ -57,6 +115,19 @@ class DiscordUser {
         roleBadge: json['roleBadge'] ?? '',
         roleColor: Color(json['roleColor'] ?? 0xFF5865F2),
         status: json['status'] ?? 'online',
+        handle: json['handle'] ?? 'gamerducky_ • Prime (R)',
+        customStatus: json['customStatus'] ?? 'What\'s on your mind?',
+        memberSince: json['memberSince'] ?? 'Jan 25, 2022',
+        orbsBalance: json['orbsBalance'] ?? 1250,
+        note: json['note'] ?? '',
+        wishlist: (json['wishlist'] as List?)
+                ?.map((item) => ShopItem.fromJson(item))
+                .toList() ??
+            [],
+        friends: (json['friends'] as List?)
+                ?.map((f) => DiscordUser.fromJson(f))
+                .toList() ??
+            [],
       );
 }
 

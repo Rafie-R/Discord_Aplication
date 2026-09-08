@@ -3,7 +3,7 @@ import '../models/server_model.dart';
 import '../models/message_model.dart';
 
 class MockDiscordData {
-  static final DiscordUser currentUser = DiscordUser(
+  static DiscordUser currentUser = DiscordUser(
     id: 'user_duck',
     name: 'Duck',
     avatarUrl: 'https://api.dicebear.com/7.x/bottts/png?seed=Duck',

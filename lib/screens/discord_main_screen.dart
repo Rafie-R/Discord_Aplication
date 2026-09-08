@@ -6,6 +6,7 @@ import '../services/storage_service.dart';
 import '../widgets/server_sidebar.dart';
 import '../widgets/channel_list_panel.dart';
 import '../widgets/chat_view_panel.dart';
+import 'user_profile_screen.dart';
 
 class DiscordMainScreen extends StatefulWidget {
   const DiscordMainScreen({super.key});
@@ -30,10 +31,29 @@ class _DiscordMainScreenState extends State<DiscordMainScreen> {
     if (_selectedChannel.unreadCount > 0) {
       _selectedChannel.unreadCount = 0;
     }
-    _loadAllPersistedMessages();
+    _loadAllPersistedData();
   }
 
-  Future<void> _loadAllPersistedMessages() async {
+  Future<void> _loadAllPersistedData() async {
+    // Load User Profile
+    final savedUser = await StorageService.loadUserProfile();
+    if (savedUser != null) {
+      setState(() {
+        MockDiscordData.currentUser.id = savedUser.id;
+        MockDiscordData.currentUser.name = savedUser.name;
+        MockDiscordData.currentUser.avatarUrl = savedUser.avatarUrl;
+        MockDiscordData.currentUser.status = savedUser.status;
+        MockDiscordData.currentUser.handle = savedUser.handle;
+        MockDiscordData.currentUser.customStatus = savedUser.customStatus;
+        MockDiscordData.currentUser.memberSince = savedUser.memberSince;
+        MockDiscordData.currentUser.orbsBalance = savedUser.orbsBalance;
+        MockDiscordData.currentUser.note = savedUser.note;
+        MockDiscordData.currentUser.wishlist = savedUser.wishlist;
+        MockDiscordData.currentUser.friends = savedUser.friends;
+      });
+    }
+
+    // Load Channel Messages
     for (var server in MockDiscordData.servers) {
       for (var cat in server.categories) {
         for (var channel in cat.channels) {
@@ -52,6 +72,22 @@ class _DiscordMainScreenState extends State<DiscordMainScreen> {
   void dispose() {
     _pageController.dispose();
     super.dispose();
+  }
+
+  void _openUserProfile() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => UserProfileScreen(
+          user: MockDiscordData.currentUser,
+          onUserUpdated: (updatedUser) {
+            setState(() {
+              MockDiscordData.currentUser = updatedUser;
+            });
+          },
+        ),
+      ),
+    );
   }
 
   void _onServerSelected(DiscordServer server) {
@@ -121,6 +157,10 @@ class _DiscordMainScreenState extends State<DiscordMainScreen> {
     if (!mounted) return;
     setState(() {
       MockDiscordData.channelMessages.clear();
+      MockDiscordData.currentUser.customStatus = "What's on your mind?";
+      MockDiscordData.currentUser.status = "online";
+      MockDiscordData.currentUser.note = "";
+      MockDiscordData.currentUser.wishlist.clear();
     });
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('All local storage cleared successfully!')),
@@ -144,6 +184,7 @@ class _DiscordMainScreenState extends State<DiscordMainScreen> {
                   selectedServer: _selectedServer,
                   onServerSelected: _onServerSelected,
                   user: MockDiscordData.currentUser,
+                  onUserProfileTap: _openUserProfile,
                 ),
                 SizedBox(
                   width: 260,
@@ -152,6 +193,7 @@ class _DiscordMainScreenState extends State<DiscordMainScreen> {
                     selectedChannel: _selectedChannel,
                     onChannelSelected: _onChannelSelected,
                     currentUser: MockDiscordData.currentUser,
+                    onUserProfileTap: _openUserProfile,
                   ),
                 ),
                 Expanded(
@@ -163,6 +205,7 @@ class _DiscordMainScreenState extends State<DiscordMainScreen> {
                     onDeleteMessage: _handleDeleteMessage,
                     onClearChannelHistory: _handleClearChannelHistory,
                     onResetAllStorage: _handleResetAllStorage,
+                    onUserProfileTap: _openUserProfile,
                   ),
                 ),
               ],
@@ -178,6 +221,7 @@ class _DiscordMainScreenState extends State<DiscordMainScreen> {
                       selectedServer: _selectedServer,
                       onServerSelected: _onServerSelected,
                       user: MockDiscordData.currentUser,
+                      onUserProfileTap: _openUserProfile,
                     ),
                     Expanded(
                       child: ChannelListPanel(
@@ -185,6 +229,7 @@ class _DiscordMainScreenState extends State<DiscordMainScreen> {
                         selectedChannel: _selectedChannel,
                         onChannelSelected: _onChannelSelected,
                         currentUser: MockDiscordData.currentUser,
+                        onUserProfileTap: _openUserProfile,
                       ),
                     ),
                   ],
@@ -204,6 +249,7 @@ class _DiscordMainScreenState extends State<DiscordMainScreen> {
                   onDeleteMessage: _handleDeleteMessage,
                   onClearChannelHistory: _handleClearChannelHistory,
                   onResetAllStorage: _handleResetAllStorage,
+                  onUserProfileTap: _openUserProfile,
                 ),
               ],
             );

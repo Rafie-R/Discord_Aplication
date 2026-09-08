@@ -12,6 +12,7 @@ class ChatViewPanel extends StatefulWidget {
   final ValueChanged<DiscordMessage>? onDeleteMessage;
   final VoidCallback? onClearChannelHistory;
   final VoidCallback? onResetAllStorage;
+  final VoidCallback? onUserProfileTap;
 
   const ChatViewPanel({
     super.key,
@@ -23,6 +24,7 @@ class ChatViewPanel extends StatefulWidget {
     this.onDeleteMessage,
     this.onClearChannelHistory,
     this.onResetAllStorage,
+    this.onUserProfileTap,
   });
 
   @override
@@ -442,28 +444,36 @@ class _ChatViewPanelState extends State<ChatViewPanel> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Avatar
-              CircleAvatar(
-                radius: 18,
-                backgroundColor: msg.author.roleColor,
-                child: ClipOval(
-                  child: Image.network(
-                    msg.author.avatarUrl,
-                    width: 36,
-                    height: 36,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Center(
-                      child: msg.author.id == 'user_duck'
-                          ? const Text('🦆', style: TextStyle(fontSize: 20))
-                          : Text(
-                              msg.author.name.isNotEmpty
-                                  ? msg.author.name[0].toUpperCase()
-                                  : 'U',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
+              InkWell(
+                onTap: () {
+                  if (widget.onUserProfileTap != null) {
+                    widget.onUserProfileTap!();
+                  }
+                },
+                borderRadius: BorderRadius.circular(18),
+                child: CircleAvatar(
+                  radius: 18,
+                  backgroundColor: msg.author.roleColor,
+                  child: ClipOval(
+                    child: Image.network(
+                      msg.author.avatarUrl,
+                      width: 36,
+                      height: 36,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Center(
+                        child: msg.author.id == 'user_duck'
+                            ? const Text('🦆', style: TextStyle(fontSize: 20))
+                            : Text(
+                                msg.author.name.isNotEmpty
+                                    ? msg.author.name[0].toUpperCase()
+                                    : 'U',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
                               ),
-                            ),
+                      ),
                     ),
                   ),
                 ),
